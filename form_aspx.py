@@ -1,16 +1,34 @@
 import scrapy
 import csv
 
+
 class SpidyQuotesViewStateSpider(scrapy.Spider):
-    name = 'spidyquotes-viewstate'
-    form_url = 'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx'
-    start_urls = [form_url]
+    name = 'results'
+    form_url = 'http://duexam2.du.ac.in/RSLT_MJ2018/Students/Combine_GradeCard.aspx'
+    start_urls = ['http://duexam2.du.ac.in/RSLT_MJ2018/Students/List_Of_Students.aspx?StdType=REG&ExamFlag=UG_SEMESTER_4Y&CourseCode=911&CourseName=(C.I.C)%20-%20B.Tech%20(Information%20Technology%20and%20Mathematical%20Innovations)&Part=I&Sem=II']
     download_delay = 1.5
 
     def parse(self, response):
+        resp_list = response.css('#gvshow > tr > td::text').extract()
+        self.new_list = []
+        i = 0
+        while i < len(resp_list):
+            if i == 0:
+                pass
+            elif i % 2 == 1:
+                new_sub_list = [resp_list[i]]
+            elif i % 2 == 0:
+                new_sub_list.append(resp_list[i])
+                self.new_list.append(new_sub_list)
+                i = i + 2
+            i += 1
+        print(self.new_list)
+        yield response.follow(self.form_url, self.parse_two)
+
+    def parse_two(self, response):
         print("Parsing parse")
         yield scrapy.FormRequest(
-            'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+            self.form_url,
             formdata={
                 '__EVENTTARGET': 'ddlexamtype',
                 '__EVENTARGUMENT':'',
@@ -30,7 +48,7 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
     def parse_scheme(self, response):
         print("Parsing parse_scheme")
         yield scrapy.FormRequest(
-            'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+            self.form_url,
             formdata={
                 '__EVENTTARGET': 'ddlexamflag',
                 '__EVENTARGUMENT':'',
@@ -52,7 +70,7 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
     def parse_stream(self, response):
         print("Parsing parse_stream")
         yield scrapy.FormRequest(
-            'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+            self.form_url,
             formdata={
                 '__EVENTTARGET': 'ddlstream',
                 '__EVENTARGUMENT':'',
@@ -74,7 +92,7 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
     def parse_course(self, response):
         print("Parsing parse_course")
         yield scrapy.FormRequest(
-            'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+            self.form_url,
             formdata={
                 '__EVENTTARGET': 'ddlcourse',
                 '__EVENTARGUMENT':'',
@@ -97,7 +115,7 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
     def parse_part(self, response):
         print("Parsing parse_part")
         yield scrapy.FormRequest(
-            'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+            self.form_url,
             formdata={
                 '__EVENTTARGET': 'ddlpart',
                 '__EVENTARGUMENT':'',
@@ -118,12 +136,11 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
         )
 
     def parse_submit(self, response):
-        user_data= [('17312911001', 'AASTHA SHRUTI'),('17312911002', 'ADIT NEGI'), ('17312911003', 'AKASH YADAV'), ('17312911004', 'ANAND RATNA RAWAT'), ('17312911005', 'ANKIT'), ('17312911006', 'ARJIT YADAV'), ('17312911007', 'ASHISH PRIYADARSHI'), ('17312911008', 'BALRAM MEENA'), ('17312911009', 'BHANU MITTAL'), ('17312911010', 'BHAWNA MAHARANA'), ('17312911011', 'DEVANSH GUPTA'), ('17312911012', 'DHAIRYA KATHPALIA'), ('17312911013', 'EKLAVYA CHOPRA'), ('17312911014', 'GAURAV'), ('17312911015', 'HARDIK KAPOOR'), ('17312911016', 'HARSHIT JOSHI'), ('17312911017', 'HITESH GAUTAM'), ('17312911018', 'KIRTI'), ('17312911019', 'MANAS AWASTHI'), ('17312911020', 'MANISH'), ('17312911021', 'MAYANK MALIK'), ('17312911022', 'NANCY'), ('17312911023', 'NAVEEN KUMAR'), ('17312911024', 'NIRUPAM GUNWAL'), ('17312911025', 'NITESH KUMAR'), ('17312911026', 'OMKAR CHAUDHARY'), ('17312911027', 'PARAS YADAV'), ('17312911028', 'PARTH GUPTA'), ('17312911029', 'PRABHAKAR DEEP TIRKEY'), ('17312911030', 'PRAKHAR AGARWAL'), ('17312911031', 'RAJ KUMAR SAH'), ('17312911032', 'RAVIKESH YADAV'), ('17312911033', 'RISHABH JAIN'), ('17312911034', 'RUDRANK RIYAM'), ('17312911035', 'SAHIL GUPTA'), ('17312911036', 'SAUMYA KUMARI'), ('17312911037', 'SHASHANK SINGH'), ('17312911038', 'SHARAD DUBEY'), ('17312911039', 'SHREYANSH TRIPATHI'), ('17312911040', 'SUNNY KOSTA'), ('17312911041', 'VEDANT BONDE'), ('17312911042', 'VIKASH VAIBHAV'), ('17312911043', 'YATHARTH RAI'), ('17312911044', 'ZALEESH AHMED')]
-        # user_data=[('17312911016','HARSHIT'),('17312911017','HITESH')]
+        user_data = self.new_list
         print("Parsing parse_submit")
         for d in user_data:
             yield scrapy.FormRequest(
-                'http://duexam1.du.ac.in/RSLT_ND2017/Students/Combine_GradeCard.aspx',
+                self.form_url,
                 formdata={
                     '__EVENTTARGET': '',
                     '__EVENTARGUMENT':'',
@@ -137,7 +154,7 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                     'ddlstream':'SC',
                     'ddlcourse':'911',
                     'ddlpart':'I',
-                    'ddlsem':'I',
+                    'ddlsem':'II',
                     'txtrollno':d[0],
                     'txtname':d[1],
                     'btnsearch':'Print Score Cart/Transcript'
@@ -147,12 +164,13 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
             )
 
     def parse_results(self, response):
-        
-        with open('harshit1.csv', 'a+') as myfile:
+
+        with open('results.csv', 'a+') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             mylist = response.css('#gvshow > tr > td::text').extract()
+            new_list = []
             item = response.meta.get('name')
-            mylist.append(item)
-            wr.writerow(mylist)
-
-            
+            new_list.append(item)
+            for ele in mylist:
+                new_list.append(ele.split('/')[0])
+            wr.writerow(new_list)
