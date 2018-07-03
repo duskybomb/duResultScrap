@@ -1,11 +1,21 @@
 import scrapy
 import csv
+from scrapy.crawler import CrawlerProcess
+import configparser
 
 
-class SpidyQuotesViewStateSpider(scrapy.Spider):
+class SpidyResults(scrapy.Spider):
     name = 'results'
-    form_url = 'http://duexam2.du.ac.in/RSLT_MJ2018/Students/Combine_GradeCard.aspx'
-    start_urls = ['http://duexam2.du.ac.in/RSLT_MJ2018/Students/List_Of_Students.aspx?StdType=REG&ExamFlag=UG_SEMESTER_4Y&CourseCode=911&CourseName=(C.I.C)%20-%20B.Tech%20(Information%20Technology%20and%20Mathematical%20Innovations)&Part=I&Sem=II']
+
+    config = configparser.RawConfigParser()
+    config.read('settings.cfg')
+    settings = config['SETTINGS']
+    form_dict = {}
+    for k, v in settings.items():
+        form_dict[k] = v
+
+    form_url = settings['FormUrl']
+    start_urls = [settings['StudentNameUrl']]
     download_delay = 1.5
 
     def parse(self, response):
@@ -16,17 +26,15 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
             if i == 0:
                 pass
             elif i % 2 == 1:
-                new_sub_list = [resp_list[i]]
-            elif i % 2 == 0:
-                new_sub_list.append(resp_list[i])
+                new_sub_list = (resp_list[i], resp_list[i+1])
                 self.new_list.append(new_sub_list)
-                i = i + 2
+                i = i + 3
             i += 1
         print(self.new_list)
         yield response.follow(self.form_url, self.parse_two)
 
     def parse_two(self, response):
-        print("Parsing parse")
+        print("Parsing parse", self.form_dict)
         yield scrapy.FormRequest(
             self.form_url,
             formdata={
@@ -36,8 +44,8 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                 '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                 '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                 '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                'ddlcollege':'312',
-                'ddlexamtype':'Semester',
+                'ddlcollege':str(self.form_dict['collegecode']),
+                'ddlexamtype':str(self.form_dict['examtype']),
                 'ddlstream':'<-----Select----->',
                 'txtrollno':'',
                 'txtname':''
@@ -56,9 +64,9 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                 '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                 '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                 '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                'ddlcollege':'312',
-                'ddlexamtype':'Semester',
-                'ddlexamflag':'UG_SEMESTER_4Y',
+                'ddlcollege':str(self.form_dict['collegecode']),
+                'ddlexamtype':str(self.form_dict['examtype']),
+                'ddlexamflag':str(self.form_dict['examscheme']),
                 'ddlstream':'<-----Select----->',
                 'ddlpart':'<-----Select----->',
                 'txtrollno':'',
@@ -78,10 +86,10 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                 '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                 '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                 '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                'ddlcollege':'312',
-                'ddlexamtype':'Semester',
-                'ddlexamflag':'UG_SEMESTER_4Y',
-                'ddlstream':'SC',
+                'ddlcollege':str(self.form_dict['collegecode']),
+                'ddlexamtype':str(self.form_dict['examtype']),
+                'ddlexamflag':str(self.form_dict['examscheme']),
+                'ddlstream':str(self.form_dict['streamcode']),
                 'ddlpart':'<-----Select----->',
                 'txtrollno':'',
                 'txtname':''
@@ -100,11 +108,11 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                 '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                 '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                 '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                'ddlcollege':'312',
-                'ddlexamtype':'Semester',
-                'ddlexamflag':'UG_SEMESTER_4Y',
-                'ddlstream':'SC',
-                'ddlcourse':'911',
+                'ddlcollege':str(self.form_dict['collegecode']),
+                'ddlexamtype':str(self.form_dict['examtype']),
+                'ddlexamflag':str(self.form_dict['examscheme']),
+                'ddlstream':str(self.form_dict['streamcode']),
+                'ddlcourse':str(self.form_dict['coursecode']),
                 'ddlpart':'<-----Select----->',
                 'txtrollno':'',
                 'txtname':''
@@ -123,12 +131,12 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                 '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                 '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                 '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                'ddlcollege':'312',
-                'ddlexamtype':'Semester',
-                'ddlexamflag':'UG_SEMESTER_4Y',
-                'ddlstream':'SC',
-                'ddlcourse':'911',
-                'ddlpart':'I',
+                'ddlcollege':str(self.form_dict['collegecode']),
+                'ddlexamtype':str(self.form_dict['examtype']),
+                'ddlexamflag':str(self.form_dict['examscheme']),
+                'ddlstream':str(self.form_dict['streamcode']),
+                'ddlcourse':str(self.form_dict['coursecode']),
+                'ddlpart':str(self.form_dict['year']),
                 'txtrollno':'',
                 'txtname':''
             },
@@ -148,13 +156,13 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
                     '__VIEWSTATE': response.css('input#__VIEWSTATE::attr(value)').extract_first(),
                     '__VIEWSTATEGENERATOR': response.css('input#__VIEWSTATEGENERATOR::attr(value)').extract_first(),
                     '__EVENTVALIDATION': response.css('input#__EVENTVALIDATION::attr(value)').extract_first(),
-                    'ddlcollege':'312',
-                    'ddlexamtype':'Semester',
-                    'ddlexamflag':'UG_SEMESTER_4Y',
-                    'ddlstream':'SC',
-                    'ddlcourse':'911',
-                    'ddlpart':'I',
-                    'ddlsem':'II',
+                    'ddlcollege':str(self.form_dict['collegecode']),
+                    'ddlexamtype':str(self.form_dict['examtype']),
+                    'ddlexamflag':str(self.form_dict['examscheme']),
+                    'ddlstream':str(self.form_dict['streamcode']),
+                    'ddlcourse':str(self.form_dict['coursecode']),
+                    'ddlpart':str(self.form_dict['year']),
+                    'ddlsem':str(self.form_dict['semester']),
                     'txtrollno':d[0],
                     'txtname':d[1],
                     'btnsearch':'Print Score Cart/Transcript'
@@ -174,3 +182,9 @@ class SpidyQuotesViewStateSpider(scrapy.Spider):
             for ele in mylist:
                 new_list.append(ele.split('/')[0])
             wr.writerow(new_list)
+
+
+if __name__ == '__main__':
+    process = CrawlerProcess()
+    process.crawl(SpidyResults)
+    process.start()
