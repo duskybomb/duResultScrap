@@ -15,7 +15,7 @@ $ source venv/bin/activate
 $ pip install scrapy
 ```
 
-Edit `settings.cfg` file.
+**Edit `settings.cfg` file.**
 
 **Run**
 ```
