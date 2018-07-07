@@ -1,5 +1,5 @@
 # duResultScrap
-2017-18 Semester 1, 2 result scraping script 
+Now supports all the courses, just edit `settings.cfg` and check out your friends results.
 
 ## Description
 A fun project to scrap result from University of Delhi results server.
