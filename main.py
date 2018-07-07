@@ -198,6 +198,15 @@ class SpidyResults(scrapy.Spider):
                     new_list.append(ele)
                 else:
                     new_list.append(ele)
+
+            new_tr_list = []
+            for tr in response.css('#gvrslt tr'):
+                    if tr.css('td'):
+                        new_td_list = tr.css('td::text').extract()
+                        new_tr_list.append(new_td_list[1])
+
+            new_list += new_tr_list
+
             wr.writerow(new_list)
 
 
