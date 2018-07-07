@@ -175,12 +175,29 @@ class SpidyResults(scrapy.Spider):
 
         with open('results.csv', 'a+') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-            mylist = response.css('#gvshow > tr > td::text').extract()
+            # mylist = response.css('#gvshow > tr > td::text').extract()
             new_list = []
+
+            tr_list = []
+            for l in response.css('#gvshow tr'):
+                if l.css('td'):
+                    td_list = []
+                    for td in l.css('td'):
+                        # print(td.css('::text').extract())
+                        td_list.append(td.css('::text').extract_first())
+                    tr_list += td_list
+
             item = response.meta.get('name')
             new_list.append(item)
-            for ele in mylist:
-                new_list.append(ele.split('/')[0])
+            for ele in tr_list:
+                if ele is not None:
+                    if '/' in ele:
+                        ele = ele.split('/')[0]
+                    if '*' in ele:
+                        ele = ele.split('*')[1]
+                    new_list.append(ele)
+                else:
+                    new_list.append(ele)
             wr.writerow(new_list)
 
 
